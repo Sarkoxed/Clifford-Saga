@@ -1,4 +1,5 @@
 import itertools as it
+import functools as ft
 import random
 
 from sage.all import QQ, CliffordAlgebra
@@ -113,7 +114,7 @@ def base_case(p, q, gens: list):
 
 
 def internal_get_isomorphism(p, q, gensp: list, gensq: list):
-    print(p, q)
+    # print(p, q)
     n = p + q
     sig = p - q
 
@@ -213,9 +214,7 @@ def recover_basis(Cl, gens, gens_to_mat):
     basis = [Cl(1)] + gens.copy()
     basis_to_mat = gens_to_mat.copy()
 
-    dim = basis_to_mat[basis[1]].dimensions()
-    print(dim)
-    dim = dim[0]
+    dim = basis_to_mat[basis[1]].dimensions()[0]
     basis_to_mat[Cl(1)] = identity_matrix(R, dim)
 
     for i in range(2, n + 1):
@@ -228,6 +227,7 @@ def recover_basis(Cl, gens, gens_to_mat):
 
 
 def get_isomorphism(p, q):
+    n = p + q
     Cl = get_clifford(p, q)
     gens = [v for _, v in Cl.basis(1).items()]
     gensp = gens[:p]
@@ -236,50 +236,44 @@ def get_isomorphism(p, q):
     gens_to_mat = internal_get_isomorphism(p, q, gensp, gensq)
 
     basis, basis_to_mat = recover_basis(Cl, gens, gens_to_mat)
-    return Cl, basis, basis_to_mat
+    inv_basis = {j: i for k in range(n + 1) for i, j in Cl.basis(k).items()}
+
+    iso = ft.partial(to_mat, basis_to_mat=basis_to_mat, inv_basis=inv_basis)
+    iso_inv = ft.partial(from_mat, basis_to_mat=basis_to_mat, basis=basis)
+    return Cl, basis, iso, iso_inv
 
 
 def check_isomorphism(p, q):
-    n = p + q
-
-    Cl, basis, basis_to_mat = get_isomorphism(p, q)
-    inv_basis = {j: i for k in range(n + 1) for i, j in Cl.basis(k).items()}
-    gens = basis[1 : 1 + n]
+    Cl, basis, iso, iso_inv = get_isomorphism(p, q)
+    gens = basis[1: p + q + 1]
 
     u = Cl(get_full_random_from_gens(gens))
     v = Cl(get_full_random_from_gens(gens))
 
-    u_m = to_mat(u, basis_to_mat, inv_basis)
-    v_m = to_mat(v, basis_to_mat, inv_basis)
+    u_m = iso(u)
+    v_m = iso(v)
 
     lhs = u * v
-    rhs = from_mat(u_m * v_m, basis_to_mat, basis)
+    rhs = iso_inv(u_m * v_m)
     assert lhs == rhs
-    print(lhs)
-    print(rhs)
 
-    lhs = to_mat(u * v, basis_to_mat, inv_basis)
+    lhs = iso(u * v)
     rhs = u_m * v_m
     assert lhs == rhs
-    print(lhs)
-    print(rhs)
 
+def check():
+    for i, j in it.product(range(5), repeat=2):
+        if i + j == 0:
+            continue
+        check_isomorphism(i, j)
 
-# def check_base_isomorphisms():
-#    # R
-#    check_isomorphism(0, 0)
-#    # R+R
-#    check_isomorphism(1, 0)
-#    # C
-#    check_isomorphism(0, 1)
-#    # H
-#    check_isomorphism(0, 2)
-#    # H + H
-#    check_isomorphism(0, 3)
+    check_isomorphism(4, 5)
 
-for i, j in it.product(range(5), repeat=2):
-    if i + j == 0:
-        continue
-    check_isomorphism(i, j)
+if __name__ == "__main__":
+    check()
 
-check_isomorphism(4, 5)
+#p, q = 4, 5
+#Cl, basis, basis_to_mat, inv_basis, gens = get_isomorphism(p, q)
+#u = Cl(get_full_random_from_gens(gens))
+#u_m = to_mat(u, basis_to_mat, inv_basis)
+#print(u_m)
