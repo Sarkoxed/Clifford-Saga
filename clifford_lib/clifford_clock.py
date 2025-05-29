@@ -1,5 +1,5 @@
-import itertools as it
 import functools as ft
+import itertools as it
 import random
 
 from sage.all import QQ, CliffordAlgebra
@@ -77,7 +77,9 @@ def base_case(p, q, gens: list):
 
     Hgen1 = Matrix(R, [[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 0, -1], [0, 0, 1, 0]])
     Hgen2 = Matrix(R, [[0, 0, -1, 0], [0, 0, 0, 1], [1, 0, 0, 0], [0, -1, 0, 0]])
-    Hgen3 = Matrix(R, [[0, 0, 0, -1], [0, 0, -1, 0], [0, 1, 0, 0], [1, 0, 0, 0]]) # - k = i * j
+    Hgen3 = Matrix(
+        R, [[0, 0, 0, -1], [0, 0, -1, 0], [0, 1, 0, 0], [1, 0, 0, 0]]
+    )  # - k = i * j
 
     if (p, q) == (0, 0):
         pass
@@ -245,7 +247,7 @@ def get_isomorphism(p, q):
 
 def check_isomorphism(p, q):
     Cl, basis, iso, iso_inv = get_isomorphism(p, q)
-    gens = basis[1: p + q + 1]
+    gens = basis[1 : p + q + 1]
 
     u = Cl(get_full_random_from_gens(gens))
     v = Cl(get_full_random_from_gens(gens))
@@ -261,6 +263,7 @@ def check_isomorphism(p, q):
     rhs = u_m * v_m
     assert lhs == rhs
 
+
 def check():
     for i, j in it.product(range(5), repeat=2):
         if i + j == 0:
@@ -269,11 +272,6 @@ def check():
 
     check_isomorphism(4, 5)
 
+
 if __name__ == "__main__":
     check()
-
-#p, q = 4, 5
-#Cl, basis, basis_to_mat, inv_basis, gens = get_isomorphism(p, q)
-#u = Cl(get_full_random_from_gens(gens))
-#u_m = to_mat(u, basis_to_mat, inv_basis)
-#print(u_m)
