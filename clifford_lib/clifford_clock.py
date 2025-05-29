@@ -18,7 +18,7 @@ from sage.all import (
 )
 from tqdm import tqdm
 
-from clifford_main import (
+from .clifford_main import (
     get_clifford,
     get_clifford_random_element_from_gens,
     get_full_clifford_from_gens,
